@@ -1,0 +1,26 @@
+version: "3"
+services:
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8000:8000"
+      - "40000:40000"
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - "./frontend:/usr/src/app"
+    command:
+      - yarn
+      - dev
+    ports:
+      - "3000:3000"
+  nginx:
+    image: nginx
+    volumes:
+      - "./nginx_dev.conf:/etc/nginx/nginx.conf"
+    ports:
+      - "80:80"
