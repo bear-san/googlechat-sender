@@ -4,11 +4,10 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"os"
 )
 
-func GetMetadata() (*GoogleMetadata, error) {
-	resp, err := http.Get(os.Getenv("GOOGLE_OAUTH_METADATA_PATH"))
+func GetMetadata(metadataUrl string) (*GoogleMetadata, error) {
+	resp, err := http.Get(metadataUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -53,4 +52,12 @@ type GoogleJwk struct {
 		Kid string `json:"kid"`
 		N   string `json:"n"`
 	} `json:"keys"`
+}
+
+type ClientInfo struct {
+	ClientId     string
+	ClientSecret string
+	Scope        string
+	RedirectUri  string
+	Domains      string
 }

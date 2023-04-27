@@ -10,4 +10,5 @@ func setRoutes(engine *gin.Engine) {
 
 	authGroup := apiGroup.Group("/auth")
 	authGroup.GET("/login", auth.Login)
+	authGroup.GET("/callback", auth.Callback)
 }

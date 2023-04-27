@@ -3,22 +3,16 @@ package auth
 import (
 	"fmt"
 	"github.com/bear-san/googlechat-sender/backend/pkg/oauth"
-	"os"
 )
 
-func CreateLoginUrl() (*string, error) {
-	metadata, err := oauth.GetMetadata()
-	if err != nil {
-		return nil, err
-	}
-
+func CreateLoginUrl(metadata oauth.GoogleMetadata, info oauth.ClientInfo) (*string, error) {
 	authUrl := fmt.Sprintf(
-		"%s?client_id=%s&scope=%s&hd=%s&redirect_uri=%s",
+		"%s?client_id=%s&scope=%s&hd=%s&redirect_uri=%s&response_type=code&access_type=offline&prompt=consent",
 		metadata.AuthorizationEndpoint,
-		os.Getenv("OAUTH_CLIENT_ID"),
-		"openid profile email",
-		os.Getenv("GOOGLE_DOMAIN_RESTRICTION"),
-		fmt.Sprintf("%s/api/auth/callback", os.Getenv("SERVER_HOST")),
+		info.ClientId,
+		info.Scope,
+		info.Domains,
+		info.RedirectUri,
 	)
 
 	return &authUrl, nil
