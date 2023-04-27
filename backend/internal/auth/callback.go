@@ -1,12 +1,17 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/bear-san/googlechat-sender/backend/ent"
+	"github.com/bear-san/googlechat-sender/backend/internal/db"
 	"github.com/bear-san/googlechat-sender/backend/pkg/oauth"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"net/http"
 	"os"
+	"time"
 )
 
 func Callback(req *gin.Context) {
@@ -77,7 +82,60 @@ func Callback(req *gin.Context) {
 
 	claims, err := oauth.ParseIdToken(cred.IdToken, *jwks)
 
-	req.JSON(http.StatusOK, claims)
+	ctx := context.Background()
+
+	var user *ent.SystemUser
+
+	user, err = db.Client.SystemUser.Get(ctx, (*claims)["sub"].(string))
+	if err != nil {
+		user, err = db.Client.SystemUser.Create().
+			SetID((*claims)["sub"].(string)).
+			SetName((*claims)["name"].(string)).
+			SetEmail((*claims)["email"].(string)).
+			Save(ctx)
+	}
+
+	if err != nil {
+		req.JSON(
+			http.StatusInternalServerError,
+			gin.H{
+				"status":      "error",
+				"description": fmt.Sprintf("failed to create new user, %v", err),
+			},
+		)
+
+		return
+	}
+
+	expTimeStmp := time.Now().Add(time.Hour * 3).Unix()
+
+	localTokenClaims := jwt.MapClaims{
+		"id":    user.ID,
+		"name":  user.Name,
+		"email": user.Email,
+		"iat":   time.Now().Unix(),
+		"exp":   expTimeStmp,
+		"aud":   os.Getenv("SERVER_HOST"),
+		"iss":   os.Getenv("SERVER_HOST"),
+	}
+
+	localToken := jwt.NewWithClaims(jwt.SigningMethodHS256, localTokenClaims)
+	localTokenString, err := localToken.SignedString([]byte(os.Getenv("SECRET_BASE")))
+
+	req.SetCookie(
+		"token",
+		localTokenString,
+		3600*3,
+		"/",
+		"",
+		true,
+		true,
+	)
+
+	req.Redirect(
+		http.StatusFound,
+		"/",
+	)
 }
 
 type OAuthCredential struct {

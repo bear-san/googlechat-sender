@@ -1,5 +1,11 @@
 version: "3"
 services:
+  postgres:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    env_file:
+      - database.env
   backend:
     build:
       context: backend
@@ -9,6 +15,8 @@ services:
       - "40000:40000"
     env_file:
       - development.env
+    links:
+      - postgres
   frontend:
     build:
       context: frontend
