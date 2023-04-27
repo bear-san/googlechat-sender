@@ -9,6 +9,18 @@ import (
 	"github.com/bear-san/googlechat-sender/backend/ent"
 )
 
+// The GoogleApiKeyFunc type is an adapter to allow the use of ordinary
+// function as GoogleApiKey mutator.
+type GoogleApiKeyFunc func(context.Context, *ent.GoogleApiKeyMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f GoogleApiKeyFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.GoogleApiKeyMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.GoogleApiKeyMutation", m)
+}
+
 // The SystemUserFunc type is an adapter to allow the use of ordinary
 // function as SystemUser mutator.
 type SystemUserFunc func(context.Context, *ent.SystemUserMutation) (ent.Value, error)

@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"github.com/bear-san/googlechat-sender/backend/ent/googleapikey"
 	"github.com/bear-san/googlechat-sender/backend/ent/systemuser"
 )
 
@@ -21,6 +22,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// GoogleApiKey is the client for interacting with the GoogleApiKey builders.
+	GoogleApiKey *GoogleApiKeyClient
 	// SystemUser is the client for interacting with the SystemUser builders.
 	SystemUser *SystemUserClient
 }
@@ -36,6 +39,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.GoogleApiKey = NewGoogleApiKeyClient(c.config)
 	c.SystemUser = NewSystemUserClient(c.config)
 }
 
@@ -117,9 +121,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		SystemUser: NewSystemUserClient(cfg),
+		ctx:          ctx,
+		config:       cfg,
+		GoogleApiKey: NewGoogleApiKeyClient(cfg),
+		SystemUser:   NewSystemUserClient(cfg),
 	}, nil
 }
 
@@ -137,16 +142,17 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:        ctx,
-		config:     cfg,
-		SystemUser: NewSystemUserClient(cfg),
+		ctx:          ctx,
+		config:       cfg,
+		GoogleApiKey: NewGoogleApiKeyClient(cfg),
+		SystemUser:   NewSystemUserClient(cfg),
 	}, nil
 }
 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		SystemUser.
+//		GoogleApiKey.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -168,22 +174,144 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.GoogleApiKey.Use(hooks...)
 	c.SystemUser.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.GoogleApiKey.Intercept(interceptors...)
 	c.SystemUser.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *GoogleApiKeyMutation:
+		return c.GoogleApiKey.mutate(ctx, m)
 	case *SystemUserMutation:
 		return c.SystemUser.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// GoogleApiKeyClient is a client for the GoogleApiKey schema.
+type GoogleApiKeyClient struct {
+	config
+}
+
+// NewGoogleApiKeyClient returns a client for the GoogleApiKey from the given config.
+func NewGoogleApiKeyClient(c config) *GoogleApiKeyClient {
+	return &GoogleApiKeyClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `googleapikey.Hooks(f(g(h())))`.
+func (c *GoogleApiKeyClient) Use(hooks ...Hook) {
+	c.hooks.GoogleApiKey = append(c.hooks.GoogleApiKey, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `googleapikey.Intercept(f(g(h())))`.
+func (c *GoogleApiKeyClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GoogleApiKey = append(c.inters.GoogleApiKey, interceptors...)
+}
+
+// Create returns a builder for creating a GoogleApiKey entity.
+func (c *GoogleApiKeyClient) Create() *GoogleApiKeyCreate {
+	mutation := newGoogleApiKeyMutation(c.config, OpCreate)
+	return &GoogleApiKeyCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GoogleApiKey entities.
+func (c *GoogleApiKeyClient) CreateBulk(builders ...*GoogleApiKeyCreate) *GoogleApiKeyCreateBulk {
+	return &GoogleApiKeyCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GoogleApiKey.
+func (c *GoogleApiKeyClient) Update() *GoogleApiKeyUpdate {
+	mutation := newGoogleApiKeyMutation(c.config, OpUpdate)
+	return &GoogleApiKeyUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GoogleApiKeyClient) UpdateOne(gak *GoogleApiKey) *GoogleApiKeyUpdateOne {
+	mutation := newGoogleApiKeyMutation(c.config, OpUpdateOne, withGoogleApiKey(gak))
+	return &GoogleApiKeyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GoogleApiKeyClient) UpdateOneID(id string) *GoogleApiKeyUpdateOne {
+	mutation := newGoogleApiKeyMutation(c.config, OpUpdateOne, withGoogleApiKeyID(id))
+	return &GoogleApiKeyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GoogleApiKey.
+func (c *GoogleApiKeyClient) Delete() *GoogleApiKeyDelete {
+	mutation := newGoogleApiKeyMutation(c.config, OpDelete)
+	return &GoogleApiKeyDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GoogleApiKeyClient) DeleteOne(gak *GoogleApiKey) *GoogleApiKeyDeleteOne {
+	return c.DeleteOneID(gak.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GoogleApiKeyClient) DeleteOneID(id string) *GoogleApiKeyDeleteOne {
+	builder := c.Delete().Where(googleapikey.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GoogleApiKeyDeleteOne{builder}
+}
+
+// Query returns a query builder for GoogleApiKey.
+func (c *GoogleApiKeyClient) Query() *GoogleApiKeyQuery {
+	return &GoogleApiKeyQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGoogleApiKey},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GoogleApiKey entity by its id.
+func (c *GoogleApiKeyClient) Get(ctx context.Context, id string) (*GoogleApiKey, error) {
+	return c.Query().Where(googleapikey.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GoogleApiKeyClient) GetX(ctx context.Context, id string) *GoogleApiKey {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *GoogleApiKeyClient) Hooks() []Hook {
+	return c.hooks.GoogleApiKey
+}
+
+// Interceptors returns the client interceptors.
+func (c *GoogleApiKeyClient) Interceptors() []Interceptor {
+	return c.inters.GoogleApiKey
+}
+
+func (c *GoogleApiKeyClient) mutate(ctx context.Context, m *GoogleApiKeyMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GoogleApiKeyCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GoogleApiKeyUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GoogleApiKeyUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GoogleApiKeyDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GoogleApiKey mutation op: %q", m.Op())
 	}
 }
 
@@ -308,9 +436,9 @@ func (c *SystemUserClient) mutate(ctx context.Context, m *SystemUserMutation) (V
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		SystemUser []ent.Hook
+		GoogleApiKey, SystemUser []ent.Hook
 	}
 	inters struct {
-		SystemUser []ent.Interceptor
+		GoogleApiKey, SystemUser []ent.Interceptor
 	}
 )

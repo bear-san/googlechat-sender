@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/bear-san/googlechat-sender/backend/ent/googleapikey"
 	"github.com/bear-san/googlechat-sender/backend/ent/systemuser"
 )
 
@@ -73,7 +74,8 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			systemuser.Table: systemuser.ValidColumn,
+			googleapikey.Table: googleapikey.ValidColumn,
+			systemuser.Table:   systemuser.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

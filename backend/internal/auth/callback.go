@@ -95,6 +95,22 @@ func Callback(req *gin.Context) {
 			Save(ctx)
 	}
 
+	uid := (*claims)["sub"].(string)
+
+	_, err = db.Client.GoogleApiKey.Get(ctx, uid)
+	if err != nil {
+		_, err = db.Client.GoogleApiKey.Create().
+			SetID(uid).
+			SetAccessToken(cred.AccessToken).
+			SetRefreshToken(cred.RefreshToken).
+			Save(ctx)
+	} else {
+		_, err = db.Client.GoogleApiKey.UpdateOneID(uid).
+			SetAccessToken(cred.AccessToken).
+			SetRefreshToken(cred.RefreshToken).
+			Save(ctx)
+	}
+
 	if err != nil {
 		req.JSON(
 			http.StatusInternalServerError,
