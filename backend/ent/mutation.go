@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -31,15 +32,16 @@ const (
 // GoogleApiKeyMutation represents an operation that mutates the GoogleApiKey nodes in the graph.
 type GoogleApiKeyMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *string
-	access_token  *string
-	refresh_token *string
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*GoogleApiKey, error)
-	predicates    []predicate.GoogleApiKey
+	op              Op
+	typ             string
+	id              *string
+	access_token    *string
+	refresh_token   *string
+	expiration_date *time.Time
+	clearedFields   map[string]struct{}
+	done            bool
+	oldValue        func(context.Context) (*GoogleApiKey, error)
+	predicates      []predicate.GoogleApiKey
 }
 
 var _ ent.Mutation = (*GoogleApiKeyMutation)(nil)
@@ -218,6 +220,42 @@ func (m *GoogleApiKeyMutation) ResetRefreshToken() {
 	m.refresh_token = nil
 }
 
+// SetExpirationDate sets the "expiration_date" field.
+func (m *GoogleApiKeyMutation) SetExpirationDate(t time.Time) {
+	m.expiration_date = &t
+}
+
+// ExpirationDate returns the value of the "expiration_date" field in the mutation.
+func (m *GoogleApiKeyMutation) ExpirationDate() (r time.Time, exists bool) {
+	v := m.expiration_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExpirationDate returns the old "expiration_date" field's value of the GoogleApiKey entity.
+// If the GoogleApiKey object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *GoogleApiKeyMutation) OldExpirationDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExpirationDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExpirationDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExpirationDate: %w", err)
+	}
+	return oldValue.ExpirationDate, nil
+}
+
+// ResetExpirationDate resets all changes to the "expiration_date" field.
+func (m *GoogleApiKeyMutation) ResetExpirationDate() {
+	m.expiration_date = nil
+}
+
 // Where appends a list predicates to the GoogleApiKeyMutation builder.
 func (m *GoogleApiKeyMutation) Where(ps ...predicate.GoogleApiKey) {
 	m.predicates = append(m.predicates, ps...)
@@ -252,12 +290,15 @@ func (m *GoogleApiKeyMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *GoogleApiKeyMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.access_token != nil {
 		fields = append(fields, googleapikey.FieldAccessToken)
 	}
 	if m.refresh_token != nil {
 		fields = append(fields, googleapikey.FieldRefreshToken)
+	}
+	if m.expiration_date != nil {
+		fields = append(fields, googleapikey.FieldExpirationDate)
 	}
 	return fields
 }
@@ -271,6 +312,8 @@ func (m *GoogleApiKeyMutation) Field(name string) (ent.Value, bool) {
 		return m.AccessToken()
 	case googleapikey.FieldRefreshToken:
 		return m.RefreshToken()
+	case googleapikey.FieldExpirationDate:
+		return m.ExpirationDate()
 	}
 	return nil, false
 }
@@ -284,6 +327,8 @@ func (m *GoogleApiKeyMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldAccessToken(ctx)
 	case googleapikey.FieldRefreshToken:
 		return m.OldRefreshToken(ctx)
+	case googleapikey.FieldExpirationDate:
+		return m.OldExpirationDate(ctx)
 	}
 	return nil, fmt.Errorf("unknown GoogleApiKey field %s", name)
 }
@@ -306,6 +351,13 @@ func (m *GoogleApiKeyMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetRefreshToken(v)
+		return nil
+	case googleapikey.FieldExpirationDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExpirationDate(v)
 		return nil
 	}
 	return fmt.Errorf("unknown GoogleApiKey field %s", name)
@@ -361,6 +413,9 @@ func (m *GoogleApiKeyMutation) ResetField(name string) error {
 		return nil
 	case googleapikey.FieldRefreshToken:
 		m.ResetRefreshToken()
+		return nil
+	case googleapikey.FieldExpirationDate:
+		m.ResetExpirationDate()
 		return nil
 	}
 	return fmt.Errorf("unknown GoogleApiKey field %s", name)

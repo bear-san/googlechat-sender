@@ -5,6 +5,7 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -20,7 +21,9 @@ type GoogleApiKey struct {
 	AccessToken string `json:"access_token,omitempty"`
 	// RefreshToken holds the value of the "refresh_token" field.
 	RefreshToken string `json:"refresh_token,omitempty"`
-	selectValues sql.SelectValues
+	// ExpirationDate holds the value of the "expiration_date" field.
+	ExpirationDate time.Time `json:"expiration_date,omitempty"`
+	selectValues   sql.SelectValues
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -30,6 +33,8 @@ func (*GoogleApiKey) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case googleapikey.FieldID, googleapikey.FieldAccessToken, googleapikey.FieldRefreshToken:
 			values[i] = new(sql.NullString)
+		case googleapikey.FieldExpirationDate:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -62,6 +67,12 @@ func (gak *GoogleApiKey) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field refresh_token", values[i])
 			} else if value.Valid {
 				gak.RefreshToken = value.String
+			}
+		case googleapikey.FieldExpirationDate:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field expiration_date", values[i])
+			} else if value.Valid {
+				gak.ExpirationDate = value.Time
 			}
 		default:
 			gak.selectValues.Set(columns[i], values[i])
@@ -104,6 +115,9 @@ func (gak *GoogleApiKey) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("refresh_token=")
 	builder.WriteString(gak.RefreshToken)
+	builder.WriteString(", ")
+	builder.WriteString("expiration_date=")
+	builder.WriteString(gak.ExpirationDate.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

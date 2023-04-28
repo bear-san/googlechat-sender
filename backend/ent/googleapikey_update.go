@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -36,6 +37,12 @@ func (gaku *GoogleApiKeyUpdate) SetAccessToken(s string) *GoogleApiKeyUpdate {
 // SetRefreshToken sets the "refresh_token" field.
 func (gaku *GoogleApiKeyUpdate) SetRefreshToken(s string) *GoogleApiKeyUpdate {
 	gaku.mutation.SetRefreshToken(s)
+	return gaku
+}
+
+// SetExpirationDate sets the "expiration_date" field.
+func (gaku *GoogleApiKeyUpdate) SetExpirationDate(t time.Time) *GoogleApiKeyUpdate {
+	gaku.mutation.SetExpirationDate(t)
 	return gaku
 }
 
@@ -86,6 +93,9 @@ func (gaku *GoogleApiKeyUpdate) sqlSave(ctx context.Context) (n int, err error) 
 	if value, ok := gaku.mutation.RefreshToken(); ok {
 		_spec.SetField(googleapikey.FieldRefreshToken, field.TypeString, value)
 	}
+	if value, ok := gaku.mutation.ExpirationDate(); ok {
+		_spec.SetField(googleapikey.FieldExpirationDate, field.TypeTime, value)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, gaku.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{googleapikey.Label}
@@ -115,6 +125,12 @@ func (gakuo *GoogleApiKeyUpdateOne) SetAccessToken(s string) *GoogleApiKeyUpdate
 // SetRefreshToken sets the "refresh_token" field.
 func (gakuo *GoogleApiKeyUpdateOne) SetRefreshToken(s string) *GoogleApiKeyUpdateOne {
 	gakuo.mutation.SetRefreshToken(s)
+	return gakuo
+}
+
+// SetExpirationDate sets the "expiration_date" field.
+func (gakuo *GoogleApiKeyUpdateOne) SetExpirationDate(t time.Time) *GoogleApiKeyUpdateOne {
+	gakuo.mutation.SetExpirationDate(t)
 	return gakuo
 }
 
@@ -194,6 +210,9 @@ func (gakuo *GoogleApiKeyUpdateOne) sqlSave(ctx context.Context) (_node *GoogleA
 	}
 	if value, ok := gakuo.mutation.RefreshToken(); ok {
 		_spec.SetField(googleapikey.FieldRefreshToken, field.TypeString, value)
+	}
+	if value, ok := gakuo.mutation.ExpirationDate(); ok {
+		_spec.SetField(googleapikey.FieldExpirationDate, field.TypeTime, value)
 	}
 	_node = &GoogleApiKey{config: gakuo.config}
 	_spec.Assign = _node.assignValues

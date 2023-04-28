@@ -16,6 +16,7 @@ func (GoogleApiKey) Fields() []ent.Field {
 		field.String("id"),
 		field.String("access_token"),
 		field.String("refresh_token"),
+		field.Time("expiration_date"),
 	}
 }
 

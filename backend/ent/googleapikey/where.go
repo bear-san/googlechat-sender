@@ -3,6 +3,8 @@
 package googleapikey
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"github.com/bear-san/googlechat-sender/backend/ent/predicate"
 )
@@ -70,6 +72,11 @@ func AccessToken(v string) predicate.GoogleApiKey {
 // RefreshToken applies equality check predicate on the "refresh_token" field. It's identical to RefreshTokenEQ.
 func RefreshToken(v string) predicate.GoogleApiKey {
 	return predicate.GoogleApiKey(sql.FieldEQ(FieldRefreshToken, v))
+}
+
+// ExpirationDate applies equality check predicate on the "expiration_date" field. It's identical to ExpirationDateEQ.
+func ExpirationDate(v time.Time) predicate.GoogleApiKey {
+	return predicate.GoogleApiKey(sql.FieldEQ(FieldExpirationDate, v))
 }
 
 // AccessTokenEQ applies the EQ predicate on the "access_token" field.
@@ -200,6 +207,46 @@ func RefreshTokenEqualFold(v string) predicate.GoogleApiKey {
 // RefreshTokenContainsFold applies the ContainsFold predicate on the "refresh_token" field.
 func RefreshTokenContainsFold(v string) predicate.GoogleApiKey {
 	return predicate.GoogleApiKey(sql.FieldContainsFold(FieldRefreshToken, v))
+}
+
+// ExpirationDateEQ applies the EQ predicate on the "expiration_date" field.
+func ExpirationDateEQ(v time.Time) predicate.GoogleApiKey {
+	return predicate.GoogleApiKey(sql.FieldEQ(FieldExpirationDate, v))
+}
+
+// ExpirationDateNEQ applies the NEQ predicate on the "expiration_date" field.
+func ExpirationDateNEQ(v time.Time) predicate.GoogleApiKey {
+	return predicate.GoogleApiKey(sql.FieldNEQ(FieldExpirationDate, v))
+}
+
+// ExpirationDateIn applies the In predicate on the "expiration_date" field.
+func ExpirationDateIn(vs ...time.Time) predicate.GoogleApiKey {
+	return predicate.GoogleApiKey(sql.FieldIn(FieldExpirationDate, vs...))
+}
+
+// ExpirationDateNotIn applies the NotIn predicate on the "expiration_date" field.
+func ExpirationDateNotIn(vs ...time.Time) predicate.GoogleApiKey {
+	return predicate.GoogleApiKey(sql.FieldNotIn(FieldExpirationDate, vs...))
+}
+
+// ExpirationDateGT applies the GT predicate on the "expiration_date" field.
+func ExpirationDateGT(v time.Time) predicate.GoogleApiKey {
+	return predicate.GoogleApiKey(sql.FieldGT(FieldExpirationDate, v))
+}
+
+// ExpirationDateGTE applies the GTE predicate on the "expiration_date" field.
+func ExpirationDateGTE(v time.Time) predicate.GoogleApiKey {
+	return predicate.GoogleApiKey(sql.FieldGTE(FieldExpirationDate, v))
+}
+
+// ExpirationDateLT applies the LT predicate on the "expiration_date" field.
+func ExpirationDateLT(v time.Time) predicate.GoogleApiKey {
+	return predicate.GoogleApiKey(sql.FieldLT(FieldExpirationDate, v))
+}
+
+// ExpirationDateLTE applies the LTE predicate on the "expiration_date" field.
+func ExpirationDateLTE(v time.Time) predicate.GoogleApiKey {
+	return predicate.GoogleApiKey(sql.FieldLTE(FieldExpirationDate, v))
 }
 
 // And groups predicates with the AND operator between them.

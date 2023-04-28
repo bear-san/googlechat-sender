@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -28,6 +29,12 @@ func (gakc *GoogleApiKeyCreate) SetAccessToken(s string) *GoogleApiKeyCreate {
 // SetRefreshToken sets the "refresh_token" field.
 func (gakc *GoogleApiKeyCreate) SetRefreshToken(s string) *GoogleApiKeyCreate {
 	gakc.mutation.SetRefreshToken(s)
+	return gakc
+}
+
+// SetExpirationDate sets the "expiration_date" field.
+func (gakc *GoogleApiKeyCreate) SetExpirationDate(t time.Time) *GoogleApiKeyCreate {
+	gakc.mutation.SetExpirationDate(t)
 	return gakc
 }
 
@@ -77,6 +84,9 @@ func (gakc *GoogleApiKeyCreate) check() error {
 	if _, ok := gakc.mutation.RefreshToken(); !ok {
 		return &ValidationError{Name: "refresh_token", err: errors.New(`ent: missing required field "GoogleApiKey.refresh_token"`)}
 	}
+	if _, ok := gakc.mutation.ExpirationDate(); !ok {
+		return &ValidationError{Name: "expiration_date", err: errors.New(`ent: missing required field "GoogleApiKey.expiration_date"`)}
+	}
 	return nil
 }
 
@@ -119,6 +129,10 @@ func (gakc *GoogleApiKeyCreate) createSpec() (*GoogleApiKey, *sqlgraph.CreateSpe
 	if value, ok := gakc.mutation.RefreshToken(); ok {
 		_spec.SetField(googleapikey.FieldRefreshToken, field.TypeString, value)
 		_node.RefreshToken = value
+	}
+	if value, ok := gakc.mutation.ExpirationDate(); ok {
+		_spec.SetField(googleapikey.FieldExpirationDate, field.TypeTime, value)
+		_node.ExpirationDate = value
 	}
 	return _node, _spec
 }

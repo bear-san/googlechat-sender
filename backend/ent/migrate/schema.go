@@ -13,6 +13,7 @@ var (
 		{Name: "id", Type: field.TypeString},
 		{Name: "access_token", Type: field.TypeString},
 		{Name: "refresh_token", Type: field.TypeString},
+		{Name: "expiration_date", Type: field.TypeTime},
 	}
 	// GoogleAPIKeysTable holds the schema information for the "google_api_keys" table.
 	GoogleAPIKeysTable = &schema.Table{

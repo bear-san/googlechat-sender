@@ -30,13 +30,7 @@ func Callback(req *gin.Context) {
 
 	token, err := oauth.GetToken(
 		req.Query("code"),
-		oauth.ClientInfo{
-			ClientId:     os.Getenv("OAUTH_CLIENT_ID"),
-			ClientSecret: os.Getenv("OAUTH_CLIENT_SECRET"),
-			Scope:        os.Getenv("OAUTH_SCOPE"),
-			RedirectUri:  fmt.Sprintf("%s/api/auth/callback", os.Getenv("SERVER_HOST")),
-			Domains:      os.Getenv("GOOGLE_DOMAIN_RESTRICTION"),
-		},
+		GetOAuthClientInfo(),
 		*metadata,
 	)
 
@@ -97,17 +91,21 @@ func Callback(req *gin.Context) {
 
 	uid := (*claims)["sub"].(string)
 
+	actExpTime := time.Now().Add(time.Duration(cred.ExpiresIn) * time.Second)
+
 	_, err = db.Client.GoogleApiKey.Get(ctx, uid)
 	if err != nil {
 		_, err = db.Client.GoogleApiKey.Create().
 			SetID(uid).
 			SetAccessToken(cred.AccessToken).
 			SetRefreshToken(cred.RefreshToken).
+			SetExpirationDate(actExpTime).
 			Save(ctx)
 	} else {
 		_, err = db.Client.GoogleApiKey.UpdateOneID(uid).
 			SetAccessToken(cred.AccessToken).
 			SetRefreshToken(cred.RefreshToken).
+			SetExpirationDate(actExpTime).
 			Save(ctx)
 	}
 

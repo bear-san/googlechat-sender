@@ -15,6 +15,8 @@ const (
 	FieldAccessToken = "access_token"
 	// FieldRefreshToken holds the string denoting the refresh_token field in the database.
 	FieldRefreshToken = "refresh_token"
+	// FieldExpirationDate holds the string denoting the expiration_date field in the database.
+	FieldExpirationDate = "expiration_date"
 	// Table holds the table name of the googleapikey in the database.
 	Table = "google_api_keys"
 )
@@ -24,6 +26,7 @@ var Columns = []string{
 	FieldID,
 	FieldAccessToken,
 	FieldRefreshToken,
+	FieldExpirationDate,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -52,4 +55,9 @@ func ByAccessToken(opts ...sql.OrderTermOption) OrderOption {
 // ByRefreshToken orders the results by the refresh_token field.
 func ByRefreshToken(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRefreshToken, opts...).ToFunc()
+}
+
+// ByExpirationDate orders the results by the expiration_date field.
+func ByExpirationDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExpirationDate, opts...).ToFunc()
 }

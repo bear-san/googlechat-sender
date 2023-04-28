@@ -2,7 +2,7 @@ package chat
 
 import (
 	"context"
-	"github.com/bear-san/googlechat-sender/backend/internal/db"
+	auth2 "github.com/bear-san/googlechat-sender/backend/internal/auth"
 	"github.com/bear-san/googlechat-sender/backend/pkg/auth"
 	"github.com/bear-san/googlechat-sender/backend/pkg/chat"
 	"github.com/gin-gonic/gin"
@@ -26,18 +26,7 @@ func SpaceList(req *gin.Context) {
 		return
 	}
 
-	apiKey, err := db.Client.GoogleApiKey.Get(ctx, u.ID)
-	if err != nil {
-		req.JSON(
-			http.StatusUnauthorized,
-			gin.H{
-				"status":      "error",
-				"description": "unauthorized",
-			},
-		)
-
-		return
-	}
+	apiKey, err := auth.GetGoogleCredential(ctx, u, auth2.GetOAuthClientInfo())
 
 	spaces, err := chat.GetSpaces(apiKey)
 	if err != nil {
