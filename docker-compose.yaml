@@ -17,17 +17,6 @@ services:
       - development.env
     links:
       - postgres
-  frontend:
-    build:
-      context: frontend
-      dockerfile: Dockerfile.dev
-    volumes:
-      - "./frontend:/usr/src/app"
-    command:
-      - yarn
-      - dev
-    ports:
-      - "3000:3000"
   nginx:
     image: nginx
     volumes:
