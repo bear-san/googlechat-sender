@@ -10,7 +10,7 @@ import (
 	"os"
 )
 
-func DirectMessageList(req *gin.Context) {
+func GWSMemberList(req *gin.Context) {
 	ctx := context.Background()
 	u, err := auth.CheckStatus(ctx, req, os.Getenv("SECRET_BASE"))
 	if err != nil {
@@ -38,7 +38,7 @@ func DirectMessageList(req *gin.Context) {
 		return
 	}
 
-	spaces, err := chat.GetDirectMessages(ctx, act, os.Getenv("GOOGLE_USER_LIST_ID"))
+	spaces, err := chat.GetGWSMembers(ctx, act, os.Getenv("GOOGLE_USER_LIST_ID"))
 
 	if err != nil {
 		req.JSON(

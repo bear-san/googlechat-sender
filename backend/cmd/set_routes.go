@@ -15,8 +15,9 @@ func setRoutes(engine *gin.Engine) {
 
 	spaceGroup := apiGroup.Group("/spaces")
 	spaceGroup.GET("/", chat.SpaceList)
-	spaceGroup.POST("/:sid", chat.SpacePost)
+	spaceGroup.POST("/:sid/messages", chat.SpacePost)
 
-	directMessageGroup := apiGroup.Group("/direct-messages")
-	directMessageGroup.GET("/", chat.DirectMessageList)
+	memberGroup := apiGroup.Group("/members")
+	memberGroup.GET("/", chat.GWSMemberList)
+	memberGroup.POST("/:uid/messages", chat.DirectMessagePost)
 }

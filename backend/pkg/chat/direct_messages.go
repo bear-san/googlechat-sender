@@ -1,56 +1,104 @@
 package chat
 
 import (
-	"context"
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"github.com/bear-san/googlechat-sender/backend/ent"
-	"golang.org/x/oauth2"
-	"google.golang.org/api/option"
-	"google.golang.org/api/sheets/v4"
+	"io"
+	"net/http"
 )
 
-func GetDirectMessages(ctx context.Context, token *ent.GoogleApiKey, sheetId string) (*[]DirectMessage, error) {
-	nToken := oauth2.Token{
-		AccessToken:  token.AccessToken,
-		TokenType:    "Bearer",
-		RefreshToken: token.RefreshToken,
-		Expiry:       token.ExpirationDate,
-	}
-	tokenSrc := oauth2.StaticTokenSource(&nToken)
+func CreateDirectMessage(token *ent.GoogleApiKey, googleUserId string) (*Space, error) {
+	spaceType := "DIRECT_MESSAGE"
+	spaceThreadingState := "UNTHREADED_MESSAGES"
 
-	client := option.WithTokenSource(tokenSrc)
-	sheetSvc, err := sheets.NewService(ctx, client)
+	memberships := []Membership{
+		{
+			Member: &Member{
+				Name: fmt.Sprintf("users/%s", googleUserId),
+				Type: "HUMAN",
+			},
+		},
+	}
+
+	reqBody := CreateDirectMessageRequest{
+		Space: Space{
+			SpaceType:           &spaceType,
+			SpaceThreadingState: &spaceThreadingState,
+		},
+		Memberships: &memberships,
+	}
+
+	reqTxt, err := json.Marshal(reqBody)
 	if err != nil {
 		return nil, err
 	}
 
-	users, err := sheetSvc.Spreadsheets.Values.Get(sheetId, "シート1!A2:G").Do()
+	req, err := http.NewRequest("POST", "https://chat.googleapis.com/v1/spaces:setup", bytes.NewBuffer(reqTxt))
 	if err != nil {
 		return nil, err
 	}
 
-	lst := make([]DirectMessage, 0)
-	for _, u := range users.Values {
-		if len(u) < 7 {
-			continue
-		}
-
-		info := DirectMessage{
-			EmployeeNumber: u[0].(string),
-			Email:          u[1].(string),
-			GoogleUserId:   u[2].(string),
-			DisplayName:    u[6].(string),
-		}
-
-		lst = append(lst, info)
+	client := new(http.Client)
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, err
 	}
 
-	return &lst, nil
+	resTxt, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var space Space
+	err = json.Unmarshal(resTxt, &space)
+
+	return &space, err
 }
 
-type DirectMessage struct {
-	EmployeeNumber string `json:"employee_number"`
-	Email          string `json:"email"`
-	GoogleUserId   string `json:"google_user_id"`
-	DisplayName    string `json:"display_name"`
-	Space          *Space `json:"space,omitempty"`
+func FindDirectMessage(token *ent.GoogleApiKey, googleUserId string) (*Space, error) {
+	req, err := http.NewRequest(
+		"GET",
+		fmt.Sprintf("https://chat.googleapis.com/v1/spaces:findDirectMessage?name=users/%s", googleUserId),
+		nil,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token.AccessToken))
+
+	client := new(http.Client)
+	res, err := client.Do(req)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resTxt, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var space Space
+	err = json.Unmarshal(resTxt, &space)
+
+	return &space, err
+}
+
+type Membership struct {
+	Name   *string `json:"name,omitempty"`
+	Member *Member `json:"member,omitempty"`
+}
+
+type Member struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+type CreateDirectMessageRequest struct {
+	Space       Space         `json:"space"`
+	Memberships *[]Membership `json:"memberships,omitempty"`
 }

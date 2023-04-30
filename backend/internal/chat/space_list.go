@@ -43,7 +43,7 @@ func SpaceList(req *gin.Context) {
 
 	lst := make([]chat.Space, 0)
 	for _, space := range *spaces {
-		if space.SpaceType != "SPACE" {
+		if *space.SpaceType != "SPACE" {
 			continue
 		}
 

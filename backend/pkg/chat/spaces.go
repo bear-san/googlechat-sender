@@ -80,7 +80,7 @@ func GetSpaces(token *ent.GoogleApiKey) (*[]Space, error) {
 }
 
 func (s *Space) Post(cred *ent.GoogleApiKey, msg Message) (*Message, error) {
-	u, err := url.Parse(fmt.Sprintf("https://chat.googleapis.com/v1/%s/messages", s.Name))
+	u, err := url.Parse(fmt.Sprintf("https://chat.googleapis.com/v1/%s/messages", *s.Name))
 	if err != nil {
 		return nil, err
 	}
@@ -109,22 +109,22 @@ func (s *Space) Post(cred *ent.GoogleApiKey, msg Message) (*Message, error) {
 }
 
 type Message struct {
-	Text string `json:"text"`
+	Text *string `json:"text,omitempty"`
 }
 
 type Space struct {
-	Name                string `json:"name"`
-	Type                string `json:"type"`
-	DisplayName         string `json:"displayName,omitempty"`
-	SpaceThreadingState string `json:"spaceThreadingState"`
-	SpaceType           string `json:"spaceType"`
-	SpaceHistoryState   string `json:"spaceHistoryState"`
-	SpaceDetails        struct {
-		Guidelines  string `json:"guidelines,omitempty"`
-		Description string `json:"description,omitempty"`
+	Name                *string `json:"name,omitempty"`
+	Type                *string `json:"type,omitempty"`
+	DisplayName         *string `json:"displayName,omitempty,omitempty"`
+	SpaceThreadingState *string `json:"spaceThreadingState,omitempty"`
+	SpaceType           *string `json:"spaceType,omitempty"`
+	SpaceHistoryState   *string `json:"spaceHistoryState,omitempty"`
+	SpaceDetails        *struct {
+		Guidelines  *string `json:"guidelines,omitempty"`
+		Description *string `json:"description,omitempty"`
 	} `json:"spaceDetails,omitempty"`
-	SingleUserBotDm bool `json:"singleUserBotDm,omitempty"`
-	Threaded        bool `json:"threaded,omitempty"`
+	SingleUserBotDm *bool `json:"singleUserBotDm,omitempty"`
+	Threaded        *bool `json:"threaded,omitempty"`
 }
 
 type SpaceList struct {
