@@ -75,7 +75,13 @@
                       </v-form>
                   </v-card-text>
                   <v-card-actions>
-                      <v-btn variant="elevated" color="success" v-on:click="send">送信</v-btn>
+                      <v-btn variant="elevated" color="success" :disabled="state.processing" v-on:click="sendMessages" v-if="!state.useAsync">
+                          送信
+                      </v-btn>
+                      <v-btn variant="elevated" color="success" :disabled="state.processing" v-on:click="sendMessages" v-if="state.useAsync">
+                          予約送信
+                      </v-btn>
+                      <v-progress-circular v-show="state.processing" indeterminate style="margin-left: 10px;" model-value="20"></v-progress-circular>
                   </v-card-actions>
               </v-card>
           </v-container>
@@ -95,7 +101,8 @@ interface Props {
     selectedSpaces: Space[]
     directMessages: DirectMessage[]
     selectedDirectMessages: DirectMessage[]
-    text: string
+    text: string,
+    processing: boolean
 }
 
 const state = reactive<Props>({
@@ -104,25 +111,25 @@ const state = reactive<Props>({
     selectedSpaces: [],
     directMessages: [],
     selectedDirectMessages: [],
-    text: ""
+    text: "",
+    processing: false
 });
 
 const chatController = new ChatController();
 
-const send = () => {
-    chatController.sendDirectMessages(state.selectedDirectMessages, state.text)
-        .then((_: any) => {
-            console.log("success");
-        }).catch((err: Error) => {
-            console.log(err)
-        });
+const sendMessages = async () => {
+    state.processing = true;
+    const dmResult = await chatController.sendDirectMessages(state.selectedDirectMessages, state.text);
+    const spaceResult = await chatController.sendMessages(state.selectedSpaces, state.text);
 
-    chatController.sendMessages(state.selectedSpaces, state.text)
-        .then((_: any) => {
-            console.log("success");
-        }).catch((err: Error) => {
-            console.log(err);
-        });
+    const successCount = dmResult.length + spaceResult.length;
+
+    state.processing = false;
+    state.selectedDirectMessages = [];
+    state.selectedSpaces = [];
+    state.text = "";
+
+    window.alert(`${successCount}件のメッセージ（DM: ${dmResult.length}件、スペース: ${spaceResult.length}件）を送信しました！`);
 }
 
 onMounted(() => {
