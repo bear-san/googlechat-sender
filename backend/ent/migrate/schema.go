@@ -26,6 +26,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "uid", Type: field.TypeString},
 		{Name: "target", Type: field.TypeString},
+		{Name: "display_name", Type: field.TypeString},
 		{Name: "text", Type: field.TypeString, Size: 2147483647},
 		{Name: "is_sent", Type: field.TypeBool},
 		{Name: "send_at", Type: field.TypeTime},

@@ -33,6 +33,12 @@ func (psc *PostScheduleCreate) SetTarget(s string) *PostScheduleCreate {
 	return psc
 }
 
+// SetDisplayName sets the "displayName" field.
+func (psc *PostScheduleCreate) SetDisplayName(s string) *PostScheduleCreate {
+	psc.mutation.SetDisplayName(s)
+	return psc
+}
+
 // SetText sets the "text" field.
 func (psc *PostScheduleCreate) SetText(s string) *PostScheduleCreate {
 	psc.mutation.SetText(s)
@@ -97,6 +103,9 @@ func (psc *PostScheduleCreate) check() error {
 	if _, ok := psc.mutation.Target(); !ok {
 		return &ValidationError{Name: "target", err: errors.New(`ent: missing required field "PostSchedule.target"`)}
 	}
+	if _, ok := psc.mutation.DisplayName(); !ok {
+		return &ValidationError{Name: "displayName", err: errors.New(`ent: missing required field "PostSchedule.displayName"`)}
+	}
 	if _, ok := psc.mutation.Text(); !ok {
 		return &ValidationError{Name: "text", err: errors.New(`ent: missing required field "PostSchedule.text"`)}
 	}
@@ -148,6 +157,10 @@ func (psc *PostScheduleCreate) createSpec() (*PostSchedule, *sqlgraph.CreateSpec
 	if value, ok := psc.mutation.Target(); ok {
 		_spec.SetField(postschedule.FieldTarget, field.TypeString, value)
 		_node.Target = value
+	}
+	if value, ok := psc.mutation.DisplayName(); ok {
+		_spec.SetField(postschedule.FieldDisplayName, field.TypeString, value)
+		_node.DisplayName = value
 	}
 	if value, ok := psc.mutation.Text(); ok {
 		_spec.SetField(postschedule.FieldText, field.TypeString, value)

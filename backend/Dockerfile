@@ -14,5 +14,7 @@ RUN apk add --no-cache ca-certificates && update-ca-certificates
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 ENV SSL_CERT_DIR=/etc/ssl/certs
 
+RUN apk add --no-cache libc6-compat
+
 EXPOSE 8000
-CMD main
+CMD ["./main"]

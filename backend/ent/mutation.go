@@ -480,6 +480,7 @@ type PostScheduleMutation struct {
 	id            *uuid.UUID
 	uid           *string
 	target        *string
+	displayName   *string
 	text          *string
 	is_sent       *bool
 	send_at       *time.Time
@@ -665,6 +666,42 @@ func (m *PostScheduleMutation) ResetTarget() {
 	m.target = nil
 }
 
+// SetDisplayName sets the "displayName" field.
+func (m *PostScheduleMutation) SetDisplayName(s string) {
+	m.displayName = &s
+}
+
+// DisplayName returns the value of the "displayName" field in the mutation.
+func (m *PostScheduleMutation) DisplayName() (r string, exists bool) {
+	v := m.displayName
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDisplayName returns the old "displayName" field's value of the PostSchedule entity.
+// If the PostSchedule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PostScheduleMutation) OldDisplayName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDisplayName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDisplayName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDisplayName: %w", err)
+	}
+	return oldValue.DisplayName, nil
+}
+
+// ResetDisplayName resets all changes to the "displayName" field.
+func (m *PostScheduleMutation) ResetDisplayName() {
+	m.displayName = nil
+}
+
 // SetText sets the "text" field.
 func (m *PostScheduleMutation) SetText(s string) {
 	m.text = &s
@@ -807,12 +844,15 @@ func (m *PostScheduleMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *PostScheduleMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.uid != nil {
 		fields = append(fields, postschedule.FieldUID)
 	}
 	if m.target != nil {
 		fields = append(fields, postschedule.FieldTarget)
+	}
+	if m.displayName != nil {
+		fields = append(fields, postschedule.FieldDisplayName)
 	}
 	if m.text != nil {
 		fields = append(fields, postschedule.FieldText)
@@ -835,6 +875,8 @@ func (m *PostScheduleMutation) Field(name string) (ent.Value, bool) {
 		return m.UID()
 	case postschedule.FieldTarget:
 		return m.Target()
+	case postschedule.FieldDisplayName:
+		return m.DisplayName()
 	case postschedule.FieldText:
 		return m.Text()
 	case postschedule.FieldIsSent:
@@ -854,6 +896,8 @@ func (m *PostScheduleMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldUID(ctx)
 	case postschedule.FieldTarget:
 		return m.OldTarget(ctx)
+	case postschedule.FieldDisplayName:
+		return m.OldDisplayName(ctx)
 	case postschedule.FieldText:
 		return m.OldText(ctx)
 	case postschedule.FieldIsSent:
@@ -882,6 +926,13 @@ func (m *PostScheduleMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTarget(v)
+		return nil
+	case postschedule.FieldDisplayName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDisplayName(v)
 		return nil
 	case postschedule.FieldText:
 		v, ok := value.(string)
@@ -958,6 +1009,9 @@ func (m *PostScheduleMutation) ResetField(name string) error {
 		return nil
 	case postschedule.FieldTarget:
 		m.ResetTarget()
+		return nil
+	case postschedule.FieldDisplayName:
+		m.ResetDisplayName()
 		return nil
 	case postschedule.FieldText:
 		m.ResetText()

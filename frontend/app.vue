@@ -94,6 +94,7 @@ import camelcaseKeys from 'camelcase-keys';
 import { ChatController } from "~/utils/chat";
 import { SpaceController } from "~/utils/spaceController";
 import { Space, DirectMessage } from "~/utils/model";
+import {Location} from "vscode-languageserver-types";
 
 interface Props {
     useAsync: boolean
@@ -160,6 +161,10 @@ const scheduleMessages = async () => {
 }
 
 onMounted(() => {
+    axios.get("/api/auth/verify").catch(() => {
+        window.location.assign("/api/auth/login");
+    });
+
     axios.get("/api/spaces/").then((res: { data: any; }) => {
         state.spaces = res.data;
     });

@@ -40,6 +40,12 @@ func (psu *PostScheduleUpdate) SetTarget(s string) *PostScheduleUpdate {
 	return psu
 }
 
+// SetDisplayName sets the "displayName" field.
+func (psu *PostScheduleUpdate) SetDisplayName(s string) *PostScheduleUpdate {
+	psu.mutation.SetDisplayName(s)
+	return psu
+}
+
 // SetText sets the "text" field.
 func (psu *PostScheduleUpdate) SetText(s string) *PostScheduleUpdate {
 	psu.mutation.SetText(s)
@@ -105,6 +111,9 @@ func (psu *PostScheduleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := psu.mutation.Target(); ok {
 		_spec.SetField(postschedule.FieldTarget, field.TypeString, value)
 	}
+	if value, ok := psu.mutation.DisplayName(); ok {
+		_spec.SetField(postschedule.FieldDisplayName, field.TypeString, value)
+	}
 	if value, ok := psu.mutation.Text(); ok {
 		_spec.SetField(postschedule.FieldText, field.TypeString, value)
 	}
@@ -143,6 +152,12 @@ func (psuo *PostScheduleUpdateOne) SetUID(s string) *PostScheduleUpdateOne {
 // SetTarget sets the "target" field.
 func (psuo *PostScheduleUpdateOne) SetTarget(s string) *PostScheduleUpdateOne {
 	psuo.mutation.SetTarget(s)
+	return psuo
+}
+
+// SetDisplayName sets the "displayName" field.
+func (psuo *PostScheduleUpdateOne) SetDisplayName(s string) *PostScheduleUpdateOne {
+	psuo.mutation.SetDisplayName(s)
 	return psuo
 }
 
@@ -240,6 +255,9 @@ func (psuo *PostScheduleUpdateOne) sqlSave(ctx context.Context) (_node *PostSche
 	}
 	if value, ok := psuo.mutation.Target(); ok {
 		_spec.SetField(postschedule.FieldTarget, field.TypeString, value)
+	}
+	if value, ok := psuo.mutation.DisplayName(); ok {
+		_spec.SetField(postschedule.FieldDisplayName, field.TypeString, value)
 	}
 	if value, ok := psuo.mutation.Text(); ok {
 		_spec.SetField(postschedule.FieldText, field.TypeString, value)

@@ -13,6 +13,8 @@ export class SpaceController {
         return new Promise<Space>(async (resolve, reject) => {
             axios.get(`/api/members/${u.googleUserId}/space`).then((res) => {
                 const data: Space = res.data;
+                data.displayName = u.displayName;
+
                 resolve(data);
             }).catch((err) => {
                 reject(err);

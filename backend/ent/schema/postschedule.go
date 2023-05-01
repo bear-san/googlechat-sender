@@ -17,6 +17,7 @@ func (PostSchedule) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}),
 		field.String("uid"),
 		field.String("target"),
+		field.String("displayName"),
 		field.Text("text"),
 		field.Bool("is_sent"),
 		field.Time("send_at"),

@@ -65,6 +65,11 @@ func Target(v string) predicate.PostSchedule {
 	return predicate.PostSchedule(sql.FieldEQ(FieldTarget, v))
 }
 
+// DisplayName applies equality check predicate on the "displayName" field. It's identical to DisplayNameEQ.
+func DisplayName(v string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldEQ(FieldDisplayName, v))
+}
+
 // Text applies equality check predicate on the "text" field. It's identical to TextEQ.
 func Text(v string) predicate.PostSchedule {
 	return predicate.PostSchedule(sql.FieldEQ(FieldText, v))
@@ -208,6 +213,71 @@ func TargetEqualFold(v string) predicate.PostSchedule {
 // TargetContainsFold applies the ContainsFold predicate on the "target" field.
 func TargetContainsFold(v string) predicate.PostSchedule {
 	return predicate.PostSchedule(sql.FieldContainsFold(FieldTarget, v))
+}
+
+// DisplayNameEQ applies the EQ predicate on the "displayName" field.
+func DisplayNameEQ(v string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldEQ(FieldDisplayName, v))
+}
+
+// DisplayNameNEQ applies the NEQ predicate on the "displayName" field.
+func DisplayNameNEQ(v string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldNEQ(FieldDisplayName, v))
+}
+
+// DisplayNameIn applies the In predicate on the "displayName" field.
+func DisplayNameIn(vs ...string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldIn(FieldDisplayName, vs...))
+}
+
+// DisplayNameNotIn applies the NotIn predicate on the "displayName" field.
+func DisplayNameNotIn(vs ...string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldNotIn(FieldDisplayName, vs...))
+}
+
+// DisplayNameGT applies the GT predicate on the "displayName" field.
+func DisplayNameGT(v string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldGT(FieldDisplayName, v))
+}
+
+// DisplayNameGTE applies the GTE predicate on the "displayName" field.
+func DisplayNameGTE(v string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldGTE(FieldDisplayName, v))
+}
+
+// DisplayNameLT applies the LT predicate on the "displayName" field.
+func DisplayNameLT(v string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldLT(FieldDisplayName, v))
+}
+
+// DisplayNameLTE applies the LTE predicate on the "displayName" field.
+func DisplayNameLTE(v string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldLTE(FieldDisplayName, v))
+}
+
+// DisplayNameContains applies the Contains predicate on the "displayName" field.
+func DisplayNameContains(v string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldContains(FieldDisplayName, v))
+}
+
+// DisplayNameHasPrefix applies the HasPrefix predicate on the "displayName" field.
+func DisplayNameHasPrefix(v string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldHasPrefix(FieldDisplayName, v))
+}
+
+// DisplayNameHasSuffix applies the HasSuffix predicate on the "displayName" field.
+func DisplayNameHasSuffix(v string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldHasSuffix(FieldDisplayName, v))
+}
+
+// DisplayNameEqualFold applies the EqualFold predicate on the "displayName" field.
+func DisplayNameEqualFold(v string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldEqualFold(FieldDisplayName, v))
+}
+
+// DisplayNameContainsFold applies the ContainsFold predicate on the "displayName" field.
+func DisplayNameContainsFold(v string) predicate.PostSchedule {
+	return predicate.PostSchedule(sql.FieldContainsFold(FieldDisplayName, v))
 }
 
 // TextEQ applies the EQ predicate on the "text" field.

@@ -19,6 +19,7 @@ func Schedule(ctx context.Context, u *ent.SystemUser, space Space, msg Message, 
 		SetID(id).
 		SetUID(u.ID).
 		SetTarget(*space.Name).
+		SetDisplayName(*space.DisplayName).
 		SetText(*msg.Text).
 		SetIsSent(false).
 		SetSendAt(sendAt).

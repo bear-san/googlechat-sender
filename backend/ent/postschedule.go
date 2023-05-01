@@ -22,6 +22,8 @@ type PostSchedule struct {
 	UID string `json:"uid,omitempty"`
 	// Target holds the value of the "target" field.
 	Target string `json:"target,omitempty"`
+	// DisplayName holds the value of the "displayName" field.
+	DisplayName string `json:"displayName,omitempty"`
 	// Text holds the value of the "text" field.
 	Text string `json:"text,omitempty"`
 	// IsSent holds the value of the "is_sent" field.
@@ -38,7 +40,7 @@ func (*PostSchedule) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case postschedule.FieldIsSent:
 			values[i] = new(sql.NullBool)
-		case postschedule.FieldUID, postschedule.FieldTarget, postschedule.FieldText:
+		case postschedule.FieldUID, postschedule.FieldTarget, postschedule.FieldDisplayName, postschedule.FieldText:
 			values[i] = new(sql.NullString)
 		case postschedule.FieldSendAt:
 			values[i] = new(sql.NullTime)
@@ -76,6 +78,12 @@ func (ps *PostSchedule) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field target", values[i])
 			} else if value.Valid {
 				ps.Target = value.String
+			}
+		case postschedule.FieldDisplayName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field displayName", values[i])
+			} else if value.Valid {
+				ps.DisplayName = value.String
 			}
 		case postschedule.FieldText:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -136,6 +144,9 @@ func (ps *PostSchedule) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("target=")
 	builder.WriteString(ps.Target)
+	builder.WriteString(", ")
+	builder.WriteString("displayName=")
+	builder.WriteString(ps.DisplayName)
 	builder.WriteString(", ")
 	builder.WriteString("text=")
 	builder.WriteString(ps.Text)

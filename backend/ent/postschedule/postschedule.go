@@ -15,6 +15,8 @@ const (
 	FieldUID = "uid"
 	// FieldTarget holds the string denoting the target field in the database.
 	FieldTarget = "target"
+	// FieldDisplayName holds the string denoting the displayname field in the database.
+	FieldDisplayName = "display_name"
 	// FieldText holds the string denoting the text field in the database.
 	FieldText = "text"
 	// FieldIsSent holds the string denoting the is_sent field in the database.
@@ -30,6 +32,7 @@ var Columns = []string{
 	FieldID,
 	FieldUID,
 	FieldTarget,
+	FieldDisplayName,
 	FieldText,
 	FieldIsSent,
 	FieldSendAt,
@@ -61,6 +64,11 @@ func ByUID(opts ...sql.OrderTermOption) OrderOption {
 // ByTarget orders the results by the target field.
 func ByTarget(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTarget, opts...).ToFunc()
+}
+
+// ByDisplayName orders the results by the displayName field.
+func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDisplayName, opts...).ToFunc()
 }
 
 // ByText orders the results by the text field.
