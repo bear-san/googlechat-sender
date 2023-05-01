@@ -9,5 +9,8 @@ import (
 // GoogleApiKey is the predicate function for googleapikey builders.
 type GoogleApiKey func(*sql.Selector)
 
+// PostSchedule is the predicate function for postschedule builders.
+type PostSchedule func(*sql.Selector)
+
 // SystemUser is the predicate function for systemuser builders.
 type SystemUser func(*sql.Selector)

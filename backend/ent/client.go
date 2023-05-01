@@ -9,11 +9,13 @@ import (
 	"log"
 
 	"github.com/bear-san/googlechat-sender/backend/ent/migrate"
+	"github.com/google/uuid"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"github.com/bear-san/googlechat-sender/backend/ent/googleapikey"
+	"github.com/bear-san/googlechat-sender/backend/ent/postschedule"
 	"github.com/bear-san/googlechat-sender/backend/ent/systemuser"
 )
 
@@ -24,6 +26,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// GoogleApiKey is the client for interacting with the GoogleApiKey builders.
 	GoogleApiKey *GoogleApiKeyClient
+	// PostSchedule is the client for interacting with the PostSchedule builders.
+	PostSchedule *PostScheduleClient
 	// SystemUser is the client for interacting with the SystemUser builders.
 	SystemUser *SystemUserClient
 }
@@ -40,6 +44,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.GoogleApiKey = NewGoogleApiKeyClient(c.config)
+	c.PostSchedule = NewPostScheduleClient(c.config)
 	c.SystemUser = NewSystemUserClient(c.config)
 }
 
@@ -124,6 +129,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ctx:          ctx,
 		config:       cfg,
 		GoogleApiKey: NewGoogleApiKeyClient(cfg),
+		PostSchedule: NewPostScheduleClient(cfg),
 		SystemUser:   NewSystemUserClient(cfg),
 	}, nil
 }
@@ -145,6 +151,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ctx:          ctx,
 		config:       cfg,
 		GoogleApiKey: NewGoogleApiKeyClient(cfg),
+		PostSchedule: NewPostScheduleClient(cfg),
 		SystemUser:   NewSystemUserClient(cfg),
 	}, nil
 }
@@ -175,6 +182,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.GoogleApiKey.Use(hooks...)
+	c.PostSchedule.Use(hooks...)
 	c.SystemUser.Use(hooks...)
 }
 
@@ -182,6 +190,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.GoogleApiKey.Intercept(interceptors...)
+	c.PostSchedule.Intercept(interceptors...)
 	c.SystemUser.Intercept(interceptors...)
 }
 
@@ -190,6 +199,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *GoogleApiKeyMutation:
 		return c.GoogleApiKey.mutate(ctx, m)
+	case *PostScheduleMutation:
+		return c.PostSchedule.mutate(ctx, m)
 	case *SystemUserMutation:
 		return c.SystemUser.mutate(ctx, m)
 	default:
@@ -315,6 +326,124 @@ func (c *GoogleApiKeyClient) mutate(ctx context.Context, m *GoogleApiKeyMutation
 	}
 }
 
+// PostScheduleClient is a client for the PostSchedule schema.
+type PostScheduleClient struct {
+	config
+}
+
+// NewPostScheduleClient returns a client for the PostSchedule from the given config.
+func NewPostScheduleClient(c config) *PostScheduleClient {
+	return &PostScheduleClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `postschedule.Hooks(f(g(h())))`.
+func (c *PostScheduleClient) Use(hooks ...Hook) {
+	c.hooks.PostSchedule = append(c.hooks.PostSchedule, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `postschedule.Intercept(f(g(h())))`.
+func (c *PostScheduleClient) Intercept(interceptors ...Interceptor) {
+	c.inters.PostSchedule = append(c.inters.PostSchedule, interceptors...)
+}
+
+// Create returns a builder for creating a PostSchedule entity.
+func (c *PostScheduleClient) Create() *PostScheduleCreate {
+	mutation := newPostScheduleMutation(c.config, OpCreate)
+	return &PostScheduleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of PostSchedule entities.
+func (c *PostScheduleClient) CreateBulk(builders ...*PostScheduleCreate) *PostScheduleCreateBulk {
+	return &PostScheduleCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for PostSchedule.
+func (c *PostScheduleClient) Update() *PostScheduleUpdate {
+	mutation := newPostScheduleMutation(c.config, OpUpdate)
+	return &PostScheduleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *PostScheduleClient) UpdateOne(ps *PostSchedule) *PostScheduleUpdateOne {
+	mutation := newPostScheduleMutation(c.config, OpUpdateOne, withPostSchedule(ps))
+	return &PostScheduleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *PostScheduleClient) UpdateOneID(id uuid.UUID) *PostScheduleUpdateOne {
+	mutation := newPostScheduleMutation(c.config, OpUpdateOne, withPostScheduleID(id))
+	return &PostScheduleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for PostSchedule.
+func (c *PostScheduleClient) Delete() *PostScheduleDelete {
+	mutation := newPostScheduleMutation(c.config, OpDelete)
+	return &PostScheduleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *PostScheduleClient) DeleteOne(ps *PostSchedule) *PostScheduleDeleteOne {
+	return c.DeleteOneID(ps.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *PostScheduleClient) DeleteOneID(id uuid.UUID) *PostScheduleDeleteOne {
+	builder := c.Delete().Where(postschedule.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &PostScheduleDeleteOne{builder}
+}
+
+// Query returns a query builder for PostSchedule.
+func (c *PostScheduleClient) Query() *PostScheduleQuery {
+	return &PostScheduleQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypePostSchedule},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a PostSchedule entity by its id.
+func (c *PostScheduleClient) Get(ctx context.Context, id uuid.UUID) (*PostSchedule, error) {
+	return c.Query().Where(postschedule.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *PostScheduleClient) GetX(ctx context.Context, id uuid.UUID) *PostSchedule {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *PostScheduleClient) Hooks() []Hook {
+	return c.hooks.PostSchedule
+}
+
+// Interceptors returns the client interceptors.
+func (c *PostScheduleClient) Interceptors() []Interceptor {
+	return c.inters.PostSchedule
+}
+
+func (c *PostScheduleClient) mutate(ctx context.Context, m *PostScheduleMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&PostScheduleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&PostScheduleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&PostScheduleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&PostScheduleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown PostSchedule mutation op: %q", m.Op())
+	}
+}
+
 // SystemUserClient is a client for the SystemUser schema.
 type SystemUserClient struct {
 	config
@@ -436,9 +565,9 @@ func (c *SystemUserClient) mutate(ctx context.Context, m *SystemUserMutation) (V
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		GoogleApiKey, SystemUser []ent.Hook
+		GoogleApiKey, PostSchedule, SystemUser []ent.Hook
 	}
 	inters struct {
-		GoogleApiKey, SystemUser []ent.Interceptor
+		GoogleApiKey, PostSchedule, SystemUser []ent.Interceptor
 	}
 )

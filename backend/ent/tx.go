@@ -14,6 +14,8 @@ type Tx struct {
 	config
 	// GoogleApiKey is the client for interacting with the GoogleApiKey builders.
 	GoogleApiKey *GoogleApiKeyClient
+	// PostSchedule is the client for interacting with the PostSchedule builders.
+	PostSchedule *PostScheduleClient
 	// SystemUser is the client for interacting with the SystemUser builders.
 	SystemUser *SystemUserClient
 
@@ -148,6 +150,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.GoogleApiKey = NewGoogleApiKeyClient(tx.config)
+	tx.PostSchedule = NewPostScheduleClient(tx.config)
 	tx.SystemUser = NewSystemUserClient(tx.config)
 }
 

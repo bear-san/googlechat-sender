@@ -21,6 +21,21 @@ var (
 		Columns:    GoogleAPIKeysColumns,
 		PrimaryKey: []*schema.Column{GoogleAPIKeysColumns[0]},
 	}
+	// PostSchedulesColumns holds the columns for the "post_schedules" table.
+	PostSchedulesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "uid", Type: field.TypeString},
+		{Name: "target", Type: field.TypeString},
+		{Name: "text", Type: field.TypeString, Size: 2147483647},
+		{Name: "is_sent", Type: field.TypeBool},
+		{Name: "send_at", Type: field.TypeTime},
+	}
+	// PostSchedulesTable holds the schema information for the "post_schedules" table.
+	PostSchedulesTable = &schema.Table{
+		Name:       "post_schedules",
+		Columns:    PostSchedulesColumns,
+		PrimaryKey: []*schema.Column{PostSchedulesColumns[0]},
+	}
 	// SystemUsersColumns holds the columns for the "system_users" table.
 	SystemUsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeString},
@@ -36,6 +51,7 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		GoogleAPIKeysTable,
+		PostSchedulesTable,
 		SystemUsersTable,
 	}
 )

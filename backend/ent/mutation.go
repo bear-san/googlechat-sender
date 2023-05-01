@@ -12,8 +12,10 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/bear-san/googlechat-sender/backend/ent/googleapikey"
+	"github.com/bear-san/googlechat-sender/backend/ent/postschedule"
 	"github.com/bear-san/googlechat-sender/backend/ent/predicate"
 	"github.com/bear-san/googlechat-sender/backend/ent/systemuser"
+	"github.com/google/uuid"
 )
 
 const (
@@ -26,6 +28,7 @@ const (
 
 	// Node types.
 	TypeGoogleApiKey = "GoogleApiKey"
+	TypePostSchedule = "PostSchedule"
 	TypeSystemUser   = "SystemUser"
 )
 
@@ -467,6 +470,554 @@ func (m *GoogleApiKeyMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *GoogleApiKeyMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown GoogleApiKey edge %s", name)
+}
+
+// PostScheduleMutation represents an operation that mutates the PostSchedule nodes in the graph.
+type PostScheduleMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	uid           *string
+	target        *string
+	text          *string
+	is_sent       *bool
+	send_at       *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*PostSchedule, error)
+	predicates    []predicate.PostSchedule
+}
+
+var _ ent.Mutation = (*PostScheduleMutation)(nil)
+
+// postscheduleOption allows management of the mutation configuration using functional options.
+type postscheduleOption func(*PostScheduleMutation)
+
+// newPostScheduleMutation creates new mutation for the PostSchedule entity.
+func newPostScheduleMutation(c config, op Op, opts ...postscheduleOption) *PostScheduleMutation {
+	m := &PostScheduleMutation{
+		config:        c,
+		op:            op,
+		typ:           TypePostSchedule,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withPostScheduleID sets the ID field of the mutation.
+func withPostScheduleID(id uuid.UUID) postscheduleOption {
+	return func(m *PostScheduleMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *PostSchedule
+		)
+		m.oldValue = func(ctx context.Context) (*PostSchedule, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().PostSchedule.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withPostSchedule sets the old PostSchedule of the mutation.
+func withPostSchedule(node *PostSchedule) postscheduleOption {
+	return func(m *PostScheduleMutation) {
+		m.oldValue = func(context.Context) (*PostSchedule, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m PostScheduleMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m PostScheduleMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of PostSchedule entities.
+func (m *PostScheduleMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *PostScheduleMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *PostScheduleMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().PostSchedule.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetUID sets the "uid" field.
+func (m *PostScheduleMutation) SetUID(s string) {
+	m.uid = &s
+}
+
+// UID returns the value of the "uid" field in the mutation.
+func (m *PostScheduleMutation) UID() (r string, exists bool) {
+	v := m.uid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUID returns the old "uid" field's value of the PostSchedule entity.
+// If the PostSchedule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PostScheduleMutation) OldUID(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUID: %w", err)
+	}
+	return oldValue.UID, nil
+}
+
+// ResetUID resets all changes to the "uid" field.
+func (m *PostScheduleMutation) ResetUID() {
+	m.uid = nil
+}
+
+// SetTarget sets the "target" field.
+func (m *PostScheduleMutation) SetTarget(s string) {
+	m.target = &s
+}
+
+// Target returns the value of the "target" field in the mutation.
+func (m *PostScheduleMutation) Target() (r string, exists bool) {
+	v := m.target
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTarget returns the old "target" field's value of the PostSchedule entity.
+// If the PostSchedule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PostScheduleMutation) OldTarget(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTarget is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTarget requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTarget: %w", err)
+	}
+	return oldValue.Target, nil
+}
+
+// ResetTarget resets all changes to the "target" field.
+func (m *PostScheduleMutation) ResetTarget() {
+	m.target = nil
+}
+
+// SetText sets the "text" field.
+func (m *PostScheduleMutation) SetText(s string) {
+	m.text = &s
+}
+
+// Text returns the value of the "text" field in the mutation.
+func (m *PostScheduleMutation) Text() (r string, exists bool) {
+	v := m.text
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldText returns the old "text" field's value of the PostSchedule entity.
+// If the PostSchedule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PostScheduleMutation) OldText(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldText is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldText requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldText: %w", err)
+	}
+	return oldValue.Text, nil
+}
+
+// ResetText resets all changes to the "text" field.
+func (m *PostScheduleMutation) ResetText() {
+	m.text = nil
+}
+
+// SetIsSent sets the "is_sent" field.
+func (m *PostScheduleMutation) SetIsSent(b bool) {
+	m.is_sent = &b
+}
+
+// IsSent returns the value of the "is_sent" field in the mutation.
+func (m *PostScheduleMutation) IsSent() (r bool, exists bool) {
+	v := m.is_sent
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsSent returns the old "is_sent" field's value of the PostSchedule entity.
+// If the PostSchedule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PostScheduleMutation) OldIsSent(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsSent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsSent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsSent: %w", err)
+	}
+	return oldValue.IsSent, nil
+}
+
+// ResetIsSent resets all changes to the "is_sent" field.
+func (m *PostScheduleMutation) ResetIsSent() {
+	m.is_sent = nil
+}
+
+// SetSendAt sets the "send_at" field.
+func (m *PostScheduleMutation) SetSendAt(t time.Time) {
+	m.send_at = &t
+}
+
+// SendAt returns the value of the "send_at" field in the mutation.
+func (m *PostScheduleMutation) SendAt() (r time.Time, exists bool) {
+	v := m.send_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSendAt returns the old "send_at" field's value of the PostSchedule entity.
+// If the PostSchedule object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *PostScheduleMutation) OldSendAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSendAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSendAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSendAt: %w", err)
+	}
+	return oldValue.SendAt, nil
+}
+
+// ResetSendAt resets all changes to the "send_at" field.
+func (m *PostScheduleMutation) ResetSendAt() {
+	m.send_at = nil
+}
+
+// Where appends a list predicates to the PostScheduleMutation builder.
+func (m *PostScheduleMutation) Where(ps ...predicate.PostSchedule) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the PostScheduleMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *PostScheduleMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.PostSchedule, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *PostScheduleMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *PostScheduleMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (PostSchedule).
+func (m *PostScheduleMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *PostScheduleMutation) Fields() []string {
+	fields := make([]string, 0, 5)
+	if m.uid != nil {
+		fields = append(fields, postschedule.FieldUID)
+	}
+	if m.target != nil {
+		fields = append(fields, postschedule.FieldTarget)
+	}
+	if m.text != nil {
+		fields = append(fields, postschedule.FieldText)
+	}
+	if m.is_sent != nil {
+		fields = append(fields, postschedule.FieldIsSent)
+	}
+	if m.send_at != nil {
+		fields = append(fields, postschedule.FieldSendAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *PostScheduleMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case postschedule.FieldUID:
+		return m.UID()
+	case postschedule.FieldTarget:
+		return m.Target()
+	case postschedule.FieldText:
+		return m.Text()
+	case postschedule.FieldIsSent:
+		return m.IsSent()
+	case postschedule.FieldSendAt:
+		return m.SendAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *PostScheduleMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case postschedule.FieldUID:
+		return m.OldUID(ctx)
+	case postschedule.FieldTarget:
+		return m.OldTarget(ctx)
+	case postschedule.FieldText:
+		return m.OldText(ctx)
+	case postschedule.FieldIsSent:
+		return m.OldIsSent(ctx)
+	case postschedule.FieldSendAt:
+		return m.OldSendAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown PostSchedule field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PostScheduleMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case postschedule.FieldUID:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUID(v)
+		return nil
+	case postschedule.FieldTarget:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTarget(v)
+		return nil
+	case postschedule.FieldText:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetText(v)
+		return nil
+	case postschedule.FieldIsSent:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsSent(v)
+		return nil
+	case postschedule.FieldSendAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSendAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown PostSchedule field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *PostScheduleMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *PostScheduleMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *PostScheduleMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown PostSchedule numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *PostScheduleMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *PostScheduleMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *PostScheduleMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown PostSchedule nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *PostScheduleMutation) ResetField(name string) error {
+	switch name {
+	case postschedule.FieldUID:
+		m.ResetUID()
+		return nil
+	case postschedule.FieldTarget:
+		m.ResetTarget()
+		return nil
+	case postschedule.FieldText:
+		m.ResetText()
+		return nil
+	case postschedule.FieldIsSent:
+		m.ResetIsSent()
+		return nil
+	case postschedule.FieldSendAt:
+		m.ResetSendAt()
+		return nil
+	}
+	return fmt.Errorf("unknown PostSchedule field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *PostScheduleMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *PostScheduleMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *PostScheduleMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *PostScheduleMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *PostScheduleMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *PostScheduleMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *PostScheduleMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown PostSchedule unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *PostScheduleMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown PostSchedule edge %s", name)
 }
 
 // SystemUserMutation represents an operation that mutates the SystemUser nodes in the graph.
