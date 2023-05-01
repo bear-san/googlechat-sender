@@ -1,6 +1,5 @@
 import axios from "axios";
-import { DirectMessage, Message, Space } from "~/utils/model";
-import { SpaceController } from "~/utils/spaceController";
+import {DirectMessage, Message, Space} from "~/utils/model";
 
 export class ChatController {
     sendDirectMessages = async (targets: DirectMessage[], text: string) => {
@@ -38,6 +37,30 @@ export class ChatController {
             }).catch((e) => {
                 reject(e);
             })
+        })
+    }
+
+    scheduleMessages = async (targets: Space[], text: string, sendTime: Date) => {
+        return Promise.all(targets.map(async (t) => {
+            return this.scheduleMessage(t, text, sendTime);
+        }));
+    }
+
+    scheduleMessage = (target: Space, text: string, sendTime: Date) => {
+        return new Promise((resolve, reject) => {
+            const t = sendTime.getTime() / 1000;
+
+            axios.post(`/api/schedules`, {
+                space: target,
+                message: {
+                    text: text,
+                },
+                send_at: t,
+            }).then((res) => {
+                resolve(res);
+            }).catch((e: Error) => {
+                reject(e);
+            });
         })
     }
 }

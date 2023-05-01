@@ -62,14 +62,13 @@
                                   <v-switch
                                     label="予約投稿"
                                     v-model="state.useAsync"
-                                    disabled
                                   ></v-switch>
                               </v-col>
                               <v-col>
-                                  <v-text-field type="date" :disabled="!state.useAsync"></v-text-field>
+                                  <v-text-field type="date" v-model="state.sendDate" :disabled="!state.useAsync"></v-text-field>
                               </v-col>
                               <v-col>
-                                  <v-text-field type="time" :disabled="!state.useAsync"></v-text-field>
+                                  <v-text-field type="time" v-model="state.sendTime" :disabled="!state.useAsync"></v-text-field>
                               </v-col>
                           </v-row>
                       </v-form>
@@ -78,7 +77,7 @@
                       <v-btn variant="elevated" color="success" :disabled="state.processing" v-on:click="sendMessages" v-if="!state.useAsync">
                           送信
                       </v-btn>
-                      <v-btn variant="elevated" color="success" :disabled="state.processing" v-on:click="sendMessages" v-if="state.useAsync">
+                      <v-btn variant="elevated" color="success" :disabled="state.processing" v-on:click="scheduleMessages" v-if="state.useAsync">
                           予約送信
                       </v-btn>
                       <v-progress-circular v-show="state.processing" indeterminate style="margin-left: 10px;" model-value="20"></v-progress-circular>
@@ -93,6 +92,7 @@
 import axios from 'axios';
 import camelcaseKeys from 'camelcase-keys';
 import { ChatController } from "~/utils/chat";
+import { SpaceController } from "~/utils/spaceController";
 import { Space, DirectMessage } from "~/utils/model";
 
 interface Props {
@@ -102,7 +102,9 @@ interface Props {
     directMessages: DirectMessage[]
     selectedDirectMessages: DirectMessage[]
     text: string,
-    processing: boolean
+    processing: boolean,
+    sendDate: string,
+    sendTime: string
 }
 
 const state = reactive<Props>({
@@ -112,10 +114,13 @@ const state = reactive<Props>({
     directMessages: [],
     selectedDirectMessages: [],
     text: "",
-    processing: false
+    processing: false,
+    sendDate: "",
+    sendTime: ""
 });
 
 const chatController = new ChatController();
+const spaceController = new SpaceController();
 
 const sendMessages = async () => {
     state.processing = true;
@@ -130,6 +135,28 @@ const sendMessages = async () => {
     state.text = "";
 
     window.alert(`${successCount}件のメッセージ（DM: ${dmResult.length}件、スペース: ${spaceResult.length}件）を送信しました！`);
+}
+
+const scheduleMessages = async () => {
+    state.processing = true;
+
+    if (state.sendDate == "" || state.sendTime == "") {
+        window.alert("送信日時は必須です！");
+        state.processing = false;
+        return;
+    }
+
+    const d = new Date(Date.parse(`${state.sendDate} ${state.sendTime}`));
+
+    const spaces = state.selectedSpaces.concat(await spaceController.findDirectMessages(state.selectedDirectMessages));
+    const results = await chatController.scheduleMessages(spaces, state.text, d);
+
+    state.processing = false;
+    state.selectedDirectMessages = [];
+    state.selectedSpaces = [];
+    state.text = "";
+
+    window.alert(`${results.length}件のメッセージ送信を予約しました！`);
 }
 
 onMounted(() => {

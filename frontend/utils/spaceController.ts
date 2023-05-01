@@ -11,7 +11,7 @@ export class SpaceController {
 
     findDirectMessage = (u: DirectMessage) => {
         return new Promise<Space>(async (resolve, reject) => {
-            axios.get(`/api/direct-messages/${u.googleUserId}/space`).then((res) => {
+            axios.get(`/api/members/${u.googleUserId}/space`).then((res) => {
                 const data: Space = res.data;
                 resolve(data);
             }).catch((err) => {

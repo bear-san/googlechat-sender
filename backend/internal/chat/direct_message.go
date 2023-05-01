@@ -95,3 +95,43 @@ func DirectMessagePost(req *gin.Context) {
 		msg,
 	)
 }
+
+func DirectMessageFind(req *gin.Context) {
+	ctx := context.Background()
+	u, err := auth.CheckStatus(ctx, req, os.Getenv("SECRET_BASE"))
+	if err != nil {
+		req.JSON(
+			http.StatusUnauthorized,
+			gin.H{
+				"status":      "error",
+				"description": "unauthorized",
+			},
+		)
+
+		return
+	}
+
+	token, err := auth.GetGoogleCredential(ctx, u, auth2.GetOAuthClientInfo())
+
+	space, err := chat.FindDirectMessage(token, req.Param("uid"))
+	if err != nil || space.Name == nil {
+		space, err = chat.CreateDirectMessage(token, req.Param("uid"))
+	}
+
+	if err != nil || space.Name == nil {
+		req.JSON(
+			http.StatusBadRequest,
+			gin.H{
+				"status":      "error",
+				"description": "failed to create space",
+			},
+		)
+
+		return
+	}
+
+	req.JSON(
+		http.StatusOK,
+		space,
+	)
+}

@@ -40,6 +40,8 @@ func CreateDirectMessage(token *ent.GoogleApiKey, googleUserId string) (*Space, 
 		return nil, err
 	}
 
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token.AccessToken))
+
 	client := new(http.Client)
 	res, err := client.Do(req)
 	if err != nil {

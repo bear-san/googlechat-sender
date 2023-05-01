@@ -19,6 +19,7 @@ func setRoutes(engine *gin.Engine) {
 
 	memberGroup := apiGroup.Group("/members")
 	memberGroup.GET("/", chat.GWSMemberList)
+	memberGroup.GET("/:uid/space", chat.DirectMessageFind)
 	memberGroup.POST("/:uid/messages", chat.DirectMessagePost)
 
 	scheduleGroup := apiGroup.Group("/schedules")
