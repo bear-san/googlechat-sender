@@ -1,6 +1,6 @@
 # GoogleChatSender
 ## これは何？
-- Google Chatに対して一斉投稿をしたり、予約投稿をするためのシステムです
+- Google Chatの個人チャットで一斉投稿をしたり、予約投稿をするためのシステムです
 
 ## about frontend
 - nuxt + vuetifyで開発しています。
