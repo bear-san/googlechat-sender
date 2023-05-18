@@ -4,7 +4,7 @@
 
 ## about frontend
 - nuxt + vuetifyで開発しています。
-- `yarn run serve`で動くはず
+- `npm run serve`で動くはず
 
 ## about backend
 - 2つの機能を持っています
