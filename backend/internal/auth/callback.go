@@ -146,6 +146,22 @@ func Callback(req *gin.Context) {
 		false,
 	)
 
+	if val, err := req.Cookie("renew"); err == nil && val == "true" {
+		req.SetCookie(
+			"renew",
+			"false",
+			-1,
+			"/",
+			"",
+			true,
+			true,
+		)
+		req.Redirect(
+			http.StatusFound,
+			"/?renew=true",
+		)
+	}
+
 	req.Redirect(
 		http.StatusFound,
 		"/",

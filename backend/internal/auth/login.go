@@ -22,6 +22,18 @@ func Login(req *gin.Context) {
 		return
 	}
 
+	if req.Query("renew") == "true" {
+		req.SetCookie(
+			"renew",
+			"true",
+			0,
+			"/",
+			"",
+			true,
+			true,
+		)
+	}
+
 	redirectUrl, err := auth.CreateLoginUrl(
 		*metadata,
 		GetOAuthClientInfo(),
