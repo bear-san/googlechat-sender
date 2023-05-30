@@ -92,7 +92,7 @@
                     「ログイン」をクリックして、再度ログインしてください
                   </v-card-text>
                   <v-card-actions class="justify-center">
-                    <v-btn variant="elevated" color="success">ログイン</v-btn>
+                    <v-btn variant="elevated" color="success" href="/api/auth/login?renew=true" target="_blank">ログイン</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-dialog>
