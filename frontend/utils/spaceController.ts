@@ -4,7 +4,7 @@ import camelcaseKeys from 'camelcase-keys';
 
 export class SpaceController {
     findDirectMessages = async (users: DirectMessage[]) => {
-        return await Promise.all(users.map(async (u) => {
+        return await Promise.allSettled(users.map(async (u) => {
             return await this.findDirectMessage(u);
         }))
     }

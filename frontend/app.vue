@@ -170,7 +170,16 @@ const scheduleMessages = async () => {
 
     const d = new Date(Date.parse(`${state.sendDate} ${state.sendTime}`));
 
-    const spaces = state.selectedSpaces.concat(await spaceController.findDirectMessages(state.selectedDirectMessages));
+    const spaces = state.selectedSpaces;
+    const dmSpaceResults = await spaceController.findDirectMessages(state.selectedDirectMessages);
+    dmSpaceResults.forEach((r, i) => {
+      if (r.status === "fulfilled") {
+        spaces.push(r.value);
+      } else {
+        window.alert(`${state.selectedDirectMessages[i].displayName}とのダイレクトメッセージを取得できませんでした。`);
+      }
+    })
+
     const results = await chatController.scheduleMessages(spaces, state.text, d);
 
     state.processing = false;
