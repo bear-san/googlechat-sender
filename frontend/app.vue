@@ -126,7 +126,18 @@ const spaceController = new SpaceController();
 const sendMessages = async () => {
     state.processing = true;
     const dmResult = await chatController.sendDirectMessages(state.selectedDirectMessages, state.text);
+    dmResult.forEach((v, i) => {
+      if (v.status === "fulfilled") return;
+
+      window.alert(`${state.selectedDirectMessages[i].displayName}へのメッセージ送信に失敗しました。`)
+    });
+
     const spaceResult = await chatController.sendMessages(state.selectedSpaces, state.text);
+    spaceResult.forEach((v, i) => {
+      if (v.status === "fulfilled") return;
+
+      window.alert(`スペース「${state.selectedSpaces[i].displayName}」へのメッセージ送信に失敗しました。`)
+    });
 
     const successCount = dmResult.length + spaceResult.length;
 

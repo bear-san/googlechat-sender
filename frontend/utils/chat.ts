@@ -3,7 +3,7 @@ import {DirectMessage, Message, Space} from "~/utils/model";
 
 export class ChatController {
     sendDirectMessages = async (targets: DirectMessage[], text: string) => {
-        return await Promise.all(targets.map(async (target) => {
+        return await Promise.allSettled(targets.map(async (target) => {
             return await this.sendDirectMessage(target, text);
         }));
     }
@@ -22,7 +22,7 @@ export class ChatController {
     }
 
     sendMessages = async (targets: Space[], text: string) => {
-        return await Promise.all(targets.map(async (t) => {
+        return await Promise.allSettled(targets.map(async (t) => {
             return await this.sendMessage(t, text);
         }));
     }
