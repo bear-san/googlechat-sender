@@ -83,6 +83,19 @@
                       <v-progress-circular v-show="state.processing" indeterminate style="margin-left: 10px;" model-value="20"></v-progress-circular>
                   </v-card-actions>
               </v-card>
+              <v-dialog v-model="state.loginExpired" persistent>
+                <v-card>
+                  <v-card-title>
+                    セッションの有効期限切れ
+                  </v-card-title>
+                  <v-card-text class="justify-center">
+                    「ログイン」をクリックして、再度ログインしてください
+                  </v-card-text>
+                  <v-card-actions class="justify-center">
+                    <v-btn variant="elevated" color="success">ログイン</v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
           </v-container>
       </v-main>
   </v-app>
@@ -94,7 +107,8 @@ import camelcaseKeys from 'camelcase-keys';
 import { ChatController } from "~/utils/chat";
 import { SpaceController } from "~/utils/spaceController";
 import { Space, DirectMessage } from "~/utils/model";
-import {Location} from "vscode-languageserver-types";
+import { parseCookies } from "nookies";
+import jwtDecode, {JwtPayload} from "jwt-decode";
 
 interface Props {
     useAsync: boolean
@@ -105,7 +119,8 @@ interface Props {
     text: string,
     processing: boolean,
     sendDate: string,
-    sendTime: string
+    sendTime: string,
+    loginExpired: boolean
 }
 
 const state = reactive<Props>({
@@ -117,7 +132,8 @@ const state = reactive<Props>({
     text: "",
     processing: false,
     sendDate: "",
-    sendTime: ""
+    sendTime: "",
+    loginExpired: false
 });
 
 const chatController = new ChatController();
@@ -202,5 +218,21 @@ onMounted(() => {
     axios.get("/api/members").then((res: { data: any; }) => {
         state.directMessages = camelcaseKeys(res.data);
     });
+
+    setInterval(() => {
+      const cookies = parseCookies();
+      try {
+        const jwt: JwtPayload = jwtDecode(cookies["token"]);
+        const date = new Date();
+
+        if (jwt.exp){
+          state.loginExpired = (jwt.exp <= (date.getTime() / 1000));
+        } else {
+          state.loginExpired = false;
+        }
+      } catch {
+        state.loginExpired = true;
+      }
+    }, 1000);
 });
 </script>

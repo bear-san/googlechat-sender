@@ -143,7 +143,7 @@ func Callback(req *gin.Context) {
 		"/",
 		"",
 		true,
-		true,
+		false,
 	)
 
 	req.Redirect(
