@@ -207,6 +207,10 @@ const scheduleMessages = async () => {
 }
 
 onMounted(() => {
+    if (useRoute().query["renew"] === "true") {
+      window.close();
+    }
+
     axios.get("/api/auth/verify").catch(() => {
         window.location.assign("/api/auth/login");
     });
