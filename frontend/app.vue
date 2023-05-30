@@ -126,27 +126,37 @@ const spaceController = new SpaceController();
 const sendMessages = async () => {
     state.processing = true;
     const dmResult = await chatController.sendDirectMessages(state.selectedDirectMessages, state.text);
+
+    let successCount = {
+      dm: 0,
+      space: 0
+    };
+
     dmResult.forEach((v, i) => {
-      if (v.status === "fulfilled") return;
+      if (v.status === "fulfilled") {
+        successCount.dm++;
+        return;
+      }
 
       window.alert(`${state.selectedDirectMessages[i].displayName}へのメッセージ送信に失敗しました。`)
     });
 
     const spaceResult = await chatController.sendMessages(state.selectedSpaces, state.text);
     spaceResult.forEach((v, i) => {
-      if (v.status === "fulfilled") return;
+      if (v.status === "fulfilled") {
+        successCount.space++;
+        return;
+      }
 
       window.alert(`スペース「${state.selectedSpaces[i].displayName}」へのメッセージ送信に失敗しました。`)
     });
-
-    const successCount = dmResult.length + spaceResult.length;
 
     state.processing = false;
     state.selectedDirectMessages = [];
     state.selectedSpaces = [];
     state.text = "";
 
-    window.alert(`${successCount}件のメッセージ（DM: ${dmResult.length}件、スペース: ${spaceResult.length}件）を送信しました！`);
+    window.alert(`DM: ${successCount.dm}件、スペース: ${successCount.space}件のメッセージを送信しました！`);
 }
 
 const scheduleMessages = async () => {
