@@ -30,7 +30,7 @@ func main() {
 		}
 
 		for _, schedule := range schedules {
-			if schedule.SendAt.Unix() < t.Unix() {
+			if schedule.SendAt.Unix() <= t.Unix() {
 				u, err := db.Client.SystemUser.Get(ctx, schedule.UID)
 				if err != nil {
 					continue
